@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WM Daily Completion Dashboard</title>
     <meta name="theme-color" content="#4f46e5">
+
+    <!-- FAVICON ADDED HERE -->
+    <link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
+
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <script src="https://cdn.tailwindcss.com/3.4.3"></script>
     
@@ -12,16 +16,11 @@
         html, body { scrollbar-width: none !important; -ms-overflow-style: none !important; }
         ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
         * { text-align: center !important; text-transform: capitalize; }
-        
         :root { --primary: #4f46e5; --text-pure-black: #000000; }
-
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); color: var(--text-pure-black); min-height: 100vh; margin: 0; padding: 20px 15px 30px 15px; }
-
         .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; position: relative; z-index: 50; }
         .btn-nav { background: rgba(255,255,255,0.7); border: 2px solid #e2e8f0; border-radius: 50px; padding: 8px 24px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.3s; color: var(--text-pure-black); text-decoration: none; display: inline-block;}
         .btn-nav:hover, .btn-nav.active { background: var(--text-pure-black); color: #fff; border-color: var(--text-pure-black); }
-        .btn-nav:disabled { opacity: 0.6; cursor: wait; }
-
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(224, 231, 255, 0.95); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.7s cubic-bezier(0.8, 0, 0.2, 1); backdrop-filter: blur(5px); }
         .skeleton-box { background: rgba(255,255,255,0.6); border-radius: 12px; margin-bottom: 20px; animation: pulse-bg 1.5s infinite ease-in-out; }
         @keyframes pulse-bg { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
@@ -29,11 +28,9 @@
         .spinner { width: 50px; height: 50px; border: 5px solid #ffffff; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         .loading-text-anim { font-weight: 800; font-size: 18px; color: var(--text-pure-black); letter-spacing: 1px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .glass-panel { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.7); z-index: 10; position: relative; }
         #report-container { background-color: transparent; max-width: 850px; margin: 0 auto; display: none; }
         .pdf-safe-chunk { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2rem; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-
         .bg-section-head { background-color: #e0e7ff !important; color: #000000 !important; } 
         .bg-city, .bg-store, .bg-coach { background-color: #f1f5f9 !important; color: #000000 !important; } 
         .bg-pendency { background-color: #fee2e2 !important; color: #000000 !important; } 
@@ -41,28 +38,21 @@
         .bg-total-row td { background-color: #cbd5e1 !important; color: #000000 !important; }
         .alert-red { background-color: #fee2e2 !important; color: #000000 !important; } 
         .normal-white { background-color: #ffffff !important; color: #000000 !important; } 
-
         table { width: 100%; border-collapse: collapse !important; background: #ffffff; border: 1px solid #cbd5e1 !important; box-sizing: border-box; margin-bottom: 0; }
         th, td { border: 1px solid #cbd5e1 !important; text-align: center; vertical-align: middle; color: #000000 !important; }
         .table-title { font-size: 14px !important; padding: 12px !important; border-bottom: 2px solid #cbd5e1 !important; }
         th { font-weight: 800; font-size: 12px; padding: 12px 8px; }
         td { font-weight: 700; font-size: 11px; padding: 10px; }
         tfoot td { font-weight: 800; font-size: 12px; }
-
-        /* Admin Secret Logic */
         #btn-container { opacity: 0; visibility: hidden; height: 0; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(-10px); }
         #btn-container.show-admin { opacity: 1; visibility: visible; height: auto; margin-bottom: 1.5rem; transform: translateY(0); padding-bottom: 10px; }
-
         .btn-pdf { background: var(--text-pure-black); color: white; display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.2s; border: none; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn-pdf:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
         .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
-        
         select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; border-radius: 10px !important; padding: 12px 20px !important; border: 2px solid #e2e8f0 !important; font-weight: 800; text-align: center; color: #000000; cursor: pointer; outline: none; transition: 0.3s; }
         select:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
-
         #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
         .toast-msg { background: var(--text-pure-black); color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: 800; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-
         @media print { .no-print { display: none !important; } body { background: #fff; } .glass-panel { background: #fff; border: none; box-shadow: none; padding: 0; } #report-container { max-width: 100%; padding: 10px; } }
     </style>
 </head>
@@ -112,7 +102,6 @@
         let cIdx = 3, sIdx = 4, tIdx = 5, dIdx = 6, fIdx = 7, col10Idx = 9;
         let dataLoaded = false;
 
-        // Admin Secret Toggle Listener
         document.addEventListener('dblclick', () => {
             if (!dataLoaded) return; 
             const container = document.getElementById('btn-container');
@@ -133,6 +122,7 @@
         }
 
         function fetchSheetData() {
+            // OPTIMIZATION: Switched to fetch() for the GitHub version
             fetch(API_URL + "?action=getRawWMData")
                 .then(response => response.json())
                 .then(processData)
@@ -144,7 +134,7 @@
         }
 
         function processData(data) {
-            if (data.length === 0) return;
+            if (!data || data.length === 0) return;
 
             const headers = data[0].map(h => h ? String(h).toLowerCase().replace(/['" \n]/g, '') : '');
             if (headers.includes('city') || headers.includes('trainingcompleted')) {
@@ -193,7 +183,7 @@
                 loader.classList.add('fade-out');
                 setTimeout(() => { loader.style.display = 'none'; }, 500);
                 document.getElementById('report-container').style.display = 'block';
-                dataLoaded = true; // Unlock the double-click secret
+                dataLoaded = true;
             }, 500);
         }
 
@@ -372,7 +362,8 @@
             });
         }
 
-        window.onload = fetchSheetData;
+        // OPTIMIZATION: Triggering earlier via DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', fetchSheetData);
     </script>
 </body>
 </html>
