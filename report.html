@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WM Daily Completion Dashboard</title>
     <meta name="theme-color" content="#4f46e5">
+
+    <link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
+
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <script src="https://cdn.tailwindcss.com/3.4.3"></script>
     
@@ -15,9 +18,8 @@
         :root { --primary: #4f46e5; --text-pure-black: #000000; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); color: var(--text-pure-black); min-height: 100vh; margin: 0; padding: 20px 15px 30px 15px; }
         .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; position: relative; z-index: 50; }
-        .btn-nav { background: rgba(255,255,255,0.7); border: 2px solid #e2e8f0; border-radius: 50px; padding: 8px 24px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.3s; color: var(--text-pure-black); text-decoration: none; }
+        .btn-nav { background: rgba(255,255,255,0.7); border: 2px solid #e2e8f0; border-radius: 50px; padding: 8px 24px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.3s; color: var(--text-pure-black); text-decoration: none; display: inline-block;}
         .btn-nav:hover, .btn-nav.active { background: var(--text-pure-black); color: #fff; border-color: var(--text-pure-black); }
-        .btn-nav:disabled { opacity: 0.6; cursor: wait; }
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(224, 231, 255, 0.95); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.7s cubic-bezier(0.8, 0, 0.2, 1); backdrop-filter: blur(5px); }
         .skeleton-box { background: rgba(255,255,255,0.6); border-radius: 12px; margin-bottom: 20px; animation: pulse-bg 1.5s infinite ease-in-out; }
         @keyframes pulse-bg { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
@@ -55,30 +57,6 @@
 </head>
 <body class="p-4 md:p-8">
 
-    <script>
-      const GAS_URL = "YOUR_WEB_APP_URL_HERE"; // Fill this only if hosting on GitHub Pages
-      
-      async function fetchFromGAS(action, payload = null) {
-        if (typeof google !== 'undefined' && google.script) {
-          return new Promise((resolve, reject) => {
-            const runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
-            if (action === 'getRawWMData') runner.getRawWMData();
-            if (action === 'getScriptUrl') runner.getScriptUrl();
-          });
-        } else {
-          const fetchActionMap = { 'getRawWMData': 'getRawWMData' };
-          const url = payload ? GAS_URL : `${GAS_URL}?action=${fetchActionMap[action] || action}`;
-          const options = payload ? {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action, ...payload })
-          } : {};
-          const res = await fetch(url, options);
-          return await res.json();
-        }
-      }
-    </script>
-
     <div id="loading-overlay">
         <div class="skeleton-box" style="width: 300px; height: 40px;"></div>
         <div class="skeleton-box" style="width: 600px; height: 50px;"></div>
@@ -87,7 +65,7 @@
     </div>
 
     <div class="top-nav">
-      <button class="btn-nav" id="navDashBtn" onclick="navigateTo('Index', this)">Pendency Dashboard</button>
+      <a href="index.html" class="btn-nav" onclick="this.innerText='Rerouting ...';">Pendency Dashboard</a>
       <button class="btn-nav active">Daily Completion</button>
     </div>
 
@@ -116,20 +94,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" defer></script>
 
     <script>
+        // YOUR APPS SCRIPT WEB APP URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbzCApky64d1Texcqaq67XP57rSRULR7RUnsqrYatGTjsHX7AW-ArAN5jO-59nSRFEVy/exec";
+
         let globalRawData = [];
         let cIdx = 3, sIdx = 4, tIdx = 5, dIdx = 6, fIdx = 7, col10Idx = 9;
         let dataLoaded = false;
-
-        async function navigateTo(page, btn) {
-            btn.innerText = "Rerouting ...";
-            btn.disabled = true;
-            if (typeof google !== 'undefined' && google.script) {
-                const url = await fetchFromGAS('getScriptUrl');
-                window.top.location.href = url + "?page=" + page;
-            } else {
-                window.top.location.href = page === 'Index' ? 'index.html' : page + '.html';
-            }
-        }
 
         document.addEventListener('dblclick', () => {
             if (!dataLoaded) return; 
@@ -150,15 +120,15 @@
             return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         }
 
-        async function fetchSheetData() {
-            try {
-                const data = await fetchFromGAS('getRawWMData');
-                processData(data);
-            } catch (err) {
-                alert("Error loading data: " + err);
-                const loader = document.getElementById('loading-overlay');
-                loader.classList.add('fade-out');
-            }
+        function fetchSheetData() {
+            fetch(API_URL + "?action=getRawWMData")
+                .then(response => response.json())
+                .then(processData)
+                .catch(err => {
+                    alert("Error loading data: " + err);
+                    const loader = document.getElementById('loading-overlay');
+                    loader.classList.add('fade-out');
+                });
         }
 
         function processData(data) {
