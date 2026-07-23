@@ -1,369 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WM Daily Completion Dashboard</title>
-    <meta name="theme-color" content="#4f46e5">
-
-    <!-- FAVICON ADDED HERE -->
-    <link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
-
-    <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <script src="https://cdn.tailwindcss.com/3.4.3"></script>
+  <meta charset="UTF-8">
+  <title>WM Daily Completion</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta name="theme-color" content="#4f46e5">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); min-height: 100vh; scrollbar-width: none; }
+    ::-webkit-scrollbar { display: none; }
+    .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); }
     
-    <style>
-        html, body { scrollbar-width: none !important; -ms-overflow-style: none !important; }
-        ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-        * { text-align: center !important; text-transform: capitalize; }
-        :root { --primary: #4f46e5; --text-pure-black: #000000; }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%); color: var(--text-pure-black); min-height: 100vh; margin: 0; padding: 20px 15px 30px 15px; }
-        .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; position: relative; z-index: 50; }
-        .btn-nav { background: rgba(255,255,255,0.7); border: 2px solid #e2e8f0; border-radius: 50px; padding: 8px 24px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.3s; color: var(--text-pure-black); text-decoration: none; display: inline-block;}
-        .btn-nav:hover, .btn-nav.active { background: var(--text-pure-black); color: #fff; border-color: var(--text-pure-black); }
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(224, 231, 255, 0.95); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.7s cubic-bezier(0.8, 0, 0.2, 1); backdrop-filter: blur(5px); }
-        .skeleton-box { background: rgba(255,255,255,0.6); border-radius: 12px; margin-bottom: 20px; animation: pulse-bg 1.5s infinite ease-in-out; }
-        @keyframes pulse-bg { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        .slide-up { transform: translateY(-100%); }
-        .spinner { width: 50px; height: 50px; border: 5px solid #ffffff; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        .loading-text-anim { font-weight: 800; font-size: 18px; color: var(--text-pure-black); letter-spacing: 1px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.7); z-index: 10; position: relative; }
-        #report-container { background-color: transparent; max-width: 850px; margin: 0 auto; display: none; }
-        .pdf-safe-chunk { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2rem; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .bg-section-head { background-color: #e0e7ff !important; color: #000000 !important; } 
-        .bg-city, .bg-store, .bg-coach { background-color: #f1f5f9 !important; color: #000000 !important; } 
-        .bg-pendency { background-color: #fee2e2 !important; color: #000000 !important; } 
-        .bg-completion { background-color: #dcfce3 !important; color: #000000 !important; } 
-        .bg-total-row td { background-color: #cbd5e1 !important; color: #000000 !important; }
-        .alert-red { background-color: #fee2e2 !important; color: #000000 !important; } 
-        .normal-white { background-color: #ffffff !important; color: #000000 !important; } 
-        table { width: 100%; border-collapse: collapse !important; background: #ffffff; border: 1px solid #cbd5e1 !important; box-sizing: border-box; margin-bottom: 0; }
-        th, td { border: 1px solid #cbd5e1 !important; text-align: center; vertical-align: middle; color: #000000 !important; }
-        .table-title { font-size: 14px !important; padding: 12px !important; border-bottom: 2px solid #cbd5e1 !important; }
-        th { font-weight: 800; font-size: 12px; padding: 12px 8px; }
-        td { font-weight: 700; font-size: 11px; padding: 10px; }
-        tfoot td { font-weight: 800; font-size: 12px; }
-        #btn-container { opacity: 0; visibility: hidden; height: 0; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(-10px); }
-        #btn-container.show-admin { opacity: 1; visibility: visible; height: auto; margin-bottom: 1.5rem; transform: translateY(0); padding-bottom: 10px; }
-        .btn-pdf { background: var(--text-pure-black); color: white; display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.2s; border: none; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-pdf:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
-        .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
-        select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: none; border-radius: 10px !important; padding: 12px 20px !important; border: 2px solid #e2e8f0 !important; font-weight: 800; text-align: center; color: #000000; cursor: pointer; outline: none; transition: 0.3s; }
-        select:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none; }
-        .toast-msg { background: var(--text-pure-black); color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: 800; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        @media print { .no-print { display: none !important; } body { background: #fff; } .glass-panel { background: #fff; border: none; box-shadow: none; padding: 0; } #report-container { max-width: 100%; padding: 10px; } }
-    </style>
+    /* Admin Toggle Animation */
+    #admin-controls { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    #admin-controls.revealed { max-height: 100px; opacity: 1; margin-bottom: 2rem; }
+    
+    /* PDF Styling Safe Blocks */
+    .pdf-safe-chunk { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 2rem; border-radius: 0.75rem; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.02); background: white; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #cbd5e1; text-align: center; vertical-align: middle; }
+    th { font-weight: 800; font-size: 13px; padding: 12px 8px; color: #0f172a; }
+    td { font-weight: 700; font-size: 12px; padding: 10px; color: #334155; }
+    
+    .bg-section-head { background-color: #e0e7ff; } 
+    .bg-pendency { background-color: #fee2e2; } 
+    .bg-completion { background-color: #dcfce3; } 
+    .alert-red { background-color: #fef2f2 !important; color: #b91c1c !important; font-weight: 800; }
+    .bg-total-row td { background-color: #f1f5f9 !important; font-weight: 800; color: #0f172a; }
+    
+    select { appearance: none; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>') no-repeat right 1rem center; background-size: 1em; padding-right: 2.5rem; }
+    
+    @media print { .no-print { display: none !important; } body { background: #fff; } .glass-panel { box-shadow: none; border: none; } }
+  </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 text-slate-900">
 
-    <div id="loading-overlay">
-        <div class="skeleton-box" style="width: 300px; height: 40px;"></div>
-        <div class="skeleton-box" style="width: 600px; height: 50px;"></div>
-        <div class="spinner"></div>
-        <div class="loading-text-anim">~ : Welcome :~</div>
-    </div>
+<!-- Config -->
+<script>
+  const GAS_URL = "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE"; 
+  const API_SECRET = "wm_secure_key_2026";
+</script>
 
-    <div class="top-nav">
-      <a href="index.html" class="btn-nav" onclick="this.innerText='Rerouting ...';">Pendency Dashboard</a>
-      <button class="btn-nav active">Daily Completion</button>
-    </div>
+<div id="loading-overlay" class="fixed inset-0 bg-indigo-50/95 backdrop-blur-md z-50 flex flex-col items-center justify-center transition-opacity duration-500">
+  <div class="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+  <p class="text-lg font-bold tracking-wide text-slate-800 flex items-center gap-2"><i data-lucide="bar-chart" class="w-5 h-5 text-indigo-600"></i> Aggregating Reports...</p>
+</div>
 
-    <div class="glass-panel">
-        <div class="max-w-4xl mx-auto flex justify-center items-center gap-4 no-print" id="btn-container">
-            <select id="col10Filter" onchange="applyFilters()">
-                <option value="ALL">All Trainer</option>
-            </select>
-            
-            <button id="exportBtn" onclick="exportReport()" class="btn-pdf">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                Export to PDF
-            </button>
-        </div>
+<div class="flex justify-center gap-4 mb-8 no-print">
+  <button onclick="navigateTo('Index', this)" class="px-6 py-2 rounded-full font-bold text-sm bg-white/70 text-slate-700 border-2 border-slate-200 hover:bg-slate-100 transition-colors">Pendency Dashboard</button>
+  <button class="px-6 py-2 rounded-full font-bold text-sm bg-slate-900 text-white shadow-lg cursor-default">Daily Completion</button>
+</div>
 
-        <div id="report-container">
-            <div id="cityContainer"></div>
-            <div id="coachContainer"></div>
-            <div class="html2pdf__page-break"></div>
-            <div id="storeContainer"></div>
-        </div>
-    </div>
+<main class="glass-panel max-w-4xl mx-auto rounded-3xl p-4 md:p-8">
+  <div id="admin-controls" class="flex justify-center items-center gap-4 no-print bg-slate-50 p-4 rounded-2xl border border-slate-200">
+    <select id="col10Filter" onchange="applyFilters()" class="border-2 border-slate-200 rounded-xl px-4 py-2.5 font-bold text-slate-700 focus:border-indigo-600 outline-none w-48 text-center bg-white">
+      <option value="ALL">All Trainers</option>
+    </select>
+    <button id="exportBtn" onclick="exportReport()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-md transition-transform hover:-translate-y-0.5">
+      <i data-lucide="file-text" class="w-5 h-5"></i> Export to PDF
+    </button>
+  </div>
 
-    <div id="toast-container"><div class="toast-msg" id="toastText">Export Control Unlock</div></div>
+  <div id="report-container" class="hidden">
+    <div id="cityContainer"></div>
+    <div id="coachContainer"></div>
+    <div class="html2pdf__page-break"></div>
+    <div id="storeContainer"></div>
+  </div>
+</main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" defer></script>
+<div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
 
-    <script>
-        // YOUR APPS SCRIPT WEB APP URL
-        const API_URL = "https://script.google.com/macros/s/AKfycbzCApky64d1Texcqaq67XP57rSRULR7RUnsqrYatGTjsHX7AW-ArAN5jO-59nSRFEVy/exec";
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
 
-        let globalRawData = [];
-        let cIdx = 3, sIdx = 4, tIdx = 5, dIdx = 6, fIdx = 7, col10Idx = 9;
-        let dataLoaded = false;
+<script>
+  lucide.createIcons();
+  let globalRawData = [];
+  let cIdx = 3, sIdx = 4, tIdx = 5, dIdx = 6, fIdx = 7, col10Idx = 9;
+  let dataLoaded = false;
 
-        document.addEventListener('dblclick', () => {
-            if (!dataLoaded) return; 
-            const container = document.getElementById('btn-container');
-            const isHidden = !container.classList.contains('show-admin');
-            
-            container.classList.toggle('show-admin');
-            
-            if (isHidden) {
-                const toast = document.getElementById('toast-container');
-                toast.style.display = 'block';
-                setTimeout(() => { toast.style.display = 'none'; }, 2500);
-            }
-        });
+  async function apiCall(action) {
+    if (window.google && google.script) {
+      return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[action]());
+    } else {
+      const req = await fetch(`${GAS_URL}?action=${action}`);
+      return await req.json();
+    }
+  }
 
-        function toTitleCase(str) {
-            if (!str) return "";
-            return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  document.addEventListener('dblclick', () => {
+    if (!dataLoaded) return; 
+    const ctrl = document.getElementById('admin-controls');
+    const isHidden = !ctrl.classList.contains('revealed');
+    ctrl.classList.toggle('revealed');
+    
+    if (isHidden) {
+      const t = document.getElementById('toast');
+      t.innerHTML = `<i data-lucide="unlock" class="inline w-4 h-4 mr-2"></i> Admin Controls Unlocked`;
+      lucide.createIcons();
+      t.classList.remove('opacity-0');
+      setTimeout(() => t.classList.add('opacity-0'), 2500);
+    }
+  });
+
+  const toTitleCase = str => str ? str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : "";
+
+  async function initApp() {
+    try {
+      let rawCache = sessionStorage.getItem('wm_raw_report_data');
+      let data = rawCache ? JSON.parse(rawCache) : await apiCall('getRawWMData');
+      
+      if (!data || data.length === 0) throw new Error("No data found");
+      if (!rawCache) sessionStorage.setItem('wm_raw_report_data', JSON.stringify(data));
+
+      const headers = data[0].map(h => String(h).toLowerCase().replace(/['" \n]/g, ''));
+      
+      // Dynamic Column Matching logic preserved perfectly
+      if (headers.includes('city') || headers.includes('trainingcompleted')) {
+        const findIdx = str => headers.findIndex(x => x.includes(str));
+        if (findIdx('city') > -1) cIdx = findIdx('city');
+        if (findIdx('storename') > -1) sIdx = findIdx('storename');
+        if (findIdx('trainingcompleted') > -1) tIdx = findIdx('trainingcompleted');
+        if (findIdx('today') > -1) dIdx = findIdx('today');
+        if (findIdx('fleetcoach') > -1) fIdx = findIdx('fleetcoach');
+        if (headers.findIndex(x => x.includes('trainer') || x === 'col10') > -1) col10Idx = headers.findIndex(x => x.includes('trainer') || x === 'col10');
+        data.shift(); 
+      }
+
+      globalRawData = data;
+      const select = document.getElementById('col10Filter');
+      const uniques = new Set();
+      
+      globalRawData.forEach(row => {
+        if (row.length > col10Idx) {
+          const val = row[col10Idx] ? String(row[col10Idx]).trim() : "";
+          if (val && val.toUpperCase() !== '#N/A') uniques.add(val);
         }
+      });
 
-        function fetchSheetData() {
-            // OPTIMIZATION: Switched to fetch() for the GitHub version
-            fetch(API_URL + "?action=getRawWMData")
-                .then(response => response.json())
-                .then(processData)
-                .catch(err => {
-                    alert("Error loading data: " + err);
-                    const loader = document.getElementById('loading-overlay');
-                    loader.classList.add('fade-out');
-                });
-        }
+      [...uniques].sort().forEach(opt => select.insertAdjacentHTML('beforeend', `<option value="${opt}">${opt}</option>`));
+      if ([...uniques].includes('Dhrubajyoti Dutta')) select.value = 'Dhrubajyoti Dutta';
 
-        function processData(data) {
-            if (!data || data.length === 0) return;
+      applyFilters();
+      
+      const loader = document.getElementById('loading-overlay');
+      loader.classList.add('opacity-0', 'pointer-events-none');
+      document.getElementById('report-container').classList.remove('hidden');
+      dataLoaded = true;
 
-            const headers = data[0].map(h => h ? String(h).toLowerCase().replace(/['" \n]/g, '') : '');
-            if (headers.includes('city') || headers.includes('trainingcompleted')) {
-                const tempC = headers.findIndex(x => x === 'city');
-                const tempS = headers.findIndex(x => x.includes('storename'));
-                const tempT = headers.findIndex(x => x.includes('trainingcompleted'));
-                const tempD = headers.findIndex(x => x.includes('today'));
-                const tempF = headers.findIndex(x => x.includes('fleetcoach'));
-                const tempTrainer = headers.findIndex(x => x.includes('trainer') || x === 'col10');
+    } catch (err) { alert("Error loading data. Refresh the page."); }
+  }
+  document.addEventListener('DOMContentLoaded', initApp);
 
-                if (tempC > -1) cIdx = tempC;
-                if (tempS > -1) sIdx = tempS;
-                if (tempT > -1) tIdx = tempT;
-                if (tempD > -1) dIdx = tempD;
-                if (tempF > -1) fIdx = tempF;
-                if (tempTrainer > -1) col10Idx = tempTrainer;
-                
-                data.shift(); 
-            }
+  function applyFilters() {
+    const filterVal = document.getElementById('col10Filter').value;
+    const cityData = {}, coachData = {}, storeData = {};
 
-            globalRawData = data;
+    globalRawData.forEach(row => {
+      if (row.length <= Math.max(cIdx, sIdx, tIdx, dIdx, fIdx, col10Idx)) return; 
+      
+      if (filterVal !== "ALL" && (row[col10Idx] ? String(row[col10Idx]).trim() : "") !== filterVal) return;
 
-            const filterSelect = document.getElementById('col10Filter');
-            const uniques = new Set();
-            
-            globalRawData.forEach(row => {
-                if (row.length > col10Idx) {
-                    const val = row[col10Idx] ? String(row[col10Idx]).trim() : "";
-                    if (val && val.toUpperCase() !== '#N/A') uniques.add(val);
-                }
-            });
+      const city = toTitleCase(row[cIdx] ? String(row[cIdx]).trim() : "");
+      const store = toTitleCase(row[sIdx] ? String(row[sIdx]).trim() : "");
+      let coach = toTitleCase(row[fIdx] ? String(row[fIdx]).trim() : "");
+      if (!coach || coach.toUpperCase() === "N/A" || coach.toUpperCase() === "#N/A") coach = "Missing";
+      
+      if (!city) return;
 
-            const sortedUniques = [...uniques].sort();
-            sortedUniques.forEach(opt => {
-                filterSelect.insertAdjacentHTML('beforeend', `<option value="${opt}">${opt}</option>`);
-            });
+      const isPendency = (String(row[tIdx]).trim().toUpperCase() === 'NO');
+      const isCompletion = (String(row[dIdx]).trim().toUpperCase() === 'YES');
 
-            if (sortedUniques.includes('Dhrubajyoti Dutta')) {
-                filterSelect.value = 'Dhrubajyoti Dutta';
-            }
+      [ {d: cityData, k: city}, {d: coachData, k: coach}, {d: storeData, k: store} ].forEach(obj => {
+        if (!obj.d[obj.k]) obj.d[obj.k] = { name: obj.k, pendency: 0, completion: 0 };
+        if (isPendency) obj.d[obj.k].pendency++;
+        if (isCompletion) obj.d[obj.k].completion++;
+      });
+    });
 
-            applyFilters();
+    const sortDesc = (a, b) => b.pendency - a.pendency;
+    const cityArr = Object.values(cityData).sort(sortDesc);
+    const coachArr = Object.values(coachData).sort(sortDesc);
+    const storeArr = Object.values(storeData).sort(sortDesc);
 
-            setTimeout(() => {
-                const loader = document.getElementById('loading-overlay');
-                loader.classList.add('fade-out');
-                setTimeout(() => { loader.style.display = 'none'; }, 500);
-                document.getElementById('report-container').style.display = 'block';
-                dataLoaded = true;
-            }, 500);
-        }
+    const agg = arr => arr.reduce((acc, curr) => ({ p: acc.p + curr.pendency, c: acc.c + curr.completion }), {p:0, c:0});
 
-        function applyFilters() {
-            const filterVal = document.getElementById('col10Filter').value;
-            
-            const cityData = {};
-            const coachData = {};
-            const storeData = {};
+    renderTable('cityContainer', 'City Wise Report', 'City Name', cityArr, agg(cityArr)); 
+    renderTable('coachContainer', 'Fleet Coach Report', 'Fleet Coach', coachArr, agg(coachArr)); 
+    renderTable('storeContainer', 'Store Wise Report', 'Dark Store Name', storeArr, agg(storeArr)); 
+  }
 
-            globalRawData.forEach(row => {
-                if (row.length <= Math.max(cIdx, sIdx, tIdx, dIdx, fIdx, col10Idx)) return; 
+  function renderTable(containerId, title, colHeader, dataArray, totals) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = ''; 
+    
+    if (dataArray.length === 0) {
+      container.innerHTML = `<div class="pdf-safe-chunk"><div class="bg-section-head font-bold p-3 text-center text-sm border-b border-slate-300">${title}</div><div class="p-8 text-center font-bold text-slate-500">No data available.</div></div>`;
+      return;
+    }
 
-                const rowCol10 = row[col10Idx] ? String(row[col10Idx]).trim() : "";
-                if (filterVal !== "ALL" && rowCol10 !== filterVal) {
-                    return; 
-                }
+    const chunk_size = 35; 
+    for (let i = 0; i < dataArray.length; i += chunk_size) {
+      const chunk = dataArray.slice(i, i + chunk_size);
+      const isFirst = (i === 0), isLast = (i + chunk_size) >= dataArray.length;
+      
+      let html = `<div class="pdf-safe-chunk"><table><thead>`;
+      if (isFirst) html += `<tr><th colspan="3" class="bg-section-head text-sm border-b-2 border-slate-300 py-3">${title}</th></tr>`;
+      
+      html += `<tr>
+                <th class="bg-slate-100 w-2/5">${colHeader}</th>
+                <th class="bg-pendency w-[30%]">Total Pendency</th>
+                <th class="bg-completion w-[30%]">Today's Completion</th>
+              </tr></thead><tbody class="divide-y divide-slate-100">`;
 
-                const rawCity = row[cIdx] ? String(row[cIdx]).trim() : "";    
-                const rawStore = row[sIdx] ? String(row[sIdx]).trim() : "";   
-                const training = row[tIdx] ? String(row[tIdx]).trim().toUpperCase() : ""; 
-                const today = row[dIdx] ? String(row[dIdx]).trim().toUpperCase() : "";    
-                const rawCoach = row[fIdx] ? String(row[fIdx]).trim() : "";   
-                
-                const city = toTitleCase(rawCity);
-                const store = toTitleCase(rawStore);
-                let coach = toTitleCase(rawCoach);
-                
-                if (coach === "" || coach.toUpperCase() === "N/A" || coach.toUpperCase() === "#N/A") {
-                    coach = "FC Name Missing";
-                }
+      chunk.forEach(item => {
+        const compClass = item.completion < 10 ? 'alert-red' : '';
+        const nameHtml = item.name === 'Missing' ? '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-extrabold border border-red-200">Missing</span>' : item.name;
+        html += `<tr><td>${nameHtml}</td><td class="font-bold">${item.pendency}</td><td class="${compClass} font-bold">${item.completion}</td></tr>`;
+      });
+      html += `</tbody>`;
 
-                if (!city) return;
+      if (isLast) html += `<tfoot><tr class="bg-total-row"><td>TOTAL</td><td>${totals.p}</td><td>${totals.c}</td></tr></tfoot>`;
+      
+      html += `</table></div>`;
+      container.innerHTML += html;
+      if (!isLast) container.innerHTML += `<div class="html2pdf__page-break"></div>`;
+    }
+  }
 
-                const isPendency = (training === 'NO');
-                const isCompletion = (today === 'YES');
+  function exportReport() {
+    const el = document.getElementById('report-container');
+    const btn = document.getElementById('exportBtn');
+    const origText = btn.innerHTML;
+    
+    btn.innerHTML = `<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> Generating...`;
+    lucide.createIcons();
+    btn.disabled = true;
+    
+    html2pdf().set({
+      margin: [0.4, 0.4, 0.4, 0.4], filename: 'WM_Completion_Report.pdf',
+      image: { type: 'jpeg', quality: 0.98 }, 
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }).from(el).save().then(() => {
+      btn.innerHTML = origText; btn.disabled = false;
+    });
+  }
 
-                if (!cityData[city]) cityData[city] = { name: city, pendency: 0, completion: 0 };
-                if (isPendency) cityData[city].pendency++;
-                if (isCompletion) cityData[city].completion++;
-
-                if (!coachData[coach]) coachData[coach] = { name: coach, pendency: 0, completion: 0 };
-                if (isPendency) coachData[coach].pendency++;
-                if (isCompletion) coachData[coach].completion++;
-
-                if (!storeData[store]) storeData[store] = { name: store, pendency: 0, completion: 0 };
-                if (isPendency) storeData[store].pendency++;
-                if (isCompletion) storeData[store].completion++;
-            });
-
-            const sortDesc = (a, b) => b.pendency - a.pendency;
-            const cityArray = Object.values(cityData).sort(sortDesc);
-            const coachArray = Object.values(coachData).sort(sortDesc);
-            const storeArray = Object.values(storeData).sort(sortDesc);
-
-            const cityTotals = { p: 0, c: 0 };
-            const coachTotals = { p: 0, c: 0 };
-            const storeTotals = { p: 0, c: 0 };
-
-            cityArray.forEach(i => { cityTotals.p += i.pendency; cityTotals.c += i.completion; });
-            coachArray.forEach(i => { coachTotals.p += i.pendency; coachTotals.c += i.completion; });
-            storeArray.forEach(i => { storeTotals.p += i.pendency; storeTotals.c += i.completion; });
-
-            renderTable('cityContainer', 'City Wise Completion Report', 'City Name', 'bg-city', cityArray, cityTotals); 
-            renderTable('coachContainer', 'Fleet Coach Wise Report', 'Fleet Coach', 'bg-coach', coachArray, coachTotals); 
-            renderTable('storeContainer', 'Store Wise Completion Report', 'Dark Store Name', 'bg-store', storeArray, storeTotals); 
-        }
-
-        function renderTable(containerId, title, colHeaderName, colHeaderClass, dataArray, totals) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = ''; 
-            
-            if (dataArray.length === 0) {
-                container.innerHTML = `
-                <div class="pdf-safe-chunk">
-                    <table>
-                        <thead>
-                            <tr><th colspan="3" class="table-title bg-section-head">${title}</th></tr>
-                            <tr>
-                                <th class="${colHeaderClass}" style="width: 40%">${colHeaderName}</th>
-                                <th class="bg-pendency" style="width: 30%">Total Pendency</th>
-                                <th class="bg-completion" style="width: 30%">Today's Completion</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="3" style="padding: 20px; font-weight: 800; color: #000000;">
-                                    No data available for this selection.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>`;
-                return;
-            }
-
-            const ROWS_PER_PAGE = 35; 
-
-            for (let i = 0; i < dataArray.length; i += ROWS_PER_PAGE) {
-                const chunk = dataArray.slice(i, i + ROWS_PER_PAGE);
-                const isFirstChunk = (i === 0);
-                const isLastChunk = (i + ROWS_PER_PAGE) >= dataArray.length;
-                
-                let tableHTML = `<div class="pdf-safe-chunk"><table><thead>`;
-                
-                if (isFirstChunk) {
-                    tableHTML += `<tr><th colspan="3" class="table-title bg-section-head">${title}</th></tr>`;
-                }
-
-                tableHTML += `
-                            <tr>
-                                <th class="${colHeaderClass}" style="width: 40%">${colHeaderName}</th>
-                                <th class="bg-pendency" style="width: 30%">Total Pendency</th>
-                                <th class="bg-completion" style="width: 30%">Today's Completion</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                chunk.forEach(item => {
-                    const completionClass = item.completion < 10 ? 'alert-red' : 'normal-white';
-                    
-                    const nameHtml = item.name === 'FC Name Missing' 
-                        ? '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold border border-red-200 shadow-sm inline-block">FC Name Missing</span>' 
-                        : item.name;
-
-                    tableHTML += `
-                        <tr>
-                            <td>${nameHtml}</td>
-                            <td style="color: #000000 !important;">${item.pendency}</td>
-                            <td class="${completionClass}">${item.completion}</td>
-                        </tr>`;
-                });
-
-                tableHTML += `</tbody>`;
-
-                if (isLastChunk) {
-                    tableHTML += `
-                        <tfoot>
-                            <tr class="bg-total-row">
-                                <td>TOTAL</td>
-                                <td>${totals.p}</td>
-                                <td>${totals.c}</td>
-                            </tr>
-                        </tfoot>`;
-                }
-
-                tableHTML += `</table></div>`;
-                container.innerHTML += tableHTML;
-
-                if (!isLastChunk) {
-                    container.innerHTML += `<div class="html2pdf__page-break"></div>`;
-                }
-            }
-        }
-
-        function exportReport() {
-            const element = document.getElementById('report-container');
-            const btn = document.getElementById('exportBtn');
-            const originalText = btn.innerHTML;
-            
-            btn.innerText = "Generating PDF...";
-            btn.disabled = true;
-            
-            const opt = {
-                margin:       [0.4, 0.4, 0.4, 0.4], 
-                filename:     'WM_Completion_Report.pdf',
-                image:        { type: 'jpeg', quality: 0.98 }, 
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: 'css' } 
-            };
-            
-            html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            });
-        }
-
-        // OPTIMIZATION: Triggering earlier via DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', fetchSheetData);
-    </script>
+  function navigateTo(page, btn) {
+    btn.innerText = "Routing...";
+    if (window.google && google.script) {
+      google.script.run.withSuccessHandler(url => window.top.location.href = url + "?page=" + page).getScriptUrl();
+    } else window.location.href = `${page}.html`; 
+  }
+</script>
 </body>
 </html>
