@@ -4,90 +4,187 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>WM Daily Completion Dashboard</title>
-<meta name="description" content="WM Daily Completion Dashboard — city, fleet coach, and dark store wise training completion report.">
+<meta name="description" content="WM Daily Completion — city, fleet coach, dark store wise training completion report.">
 <meta name="theme-color" content="#4f46e5">
 <link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
 <style>
+  /* ── Reset & base ───────────────────────────────────────────────────────── */
+  *,*::before,*::after{box-sizing:border-box}
   html,body{scrollbar-width:none!important;-ms-overflow-style:none!important}
   ::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
-  :root{--primary:#4f46e5;--ink:#000}
-  body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#e0e7ff 0%,#f8fafc 100%);color:var(--ink);min-height:100vh;margin:0;padding:20px 15px 30px}
-  .wm-shell,.wm-shell *{text-align:center}
+  :root{--primary:#4f46e5;--primary-light:#818cf8;--ink:#1e1b4b}
+  body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:linear-gradient(135deg,#c7d2fe 0%,#e0e7ff 40%,#f8fafc 100%);
+    color:var(--ink);min-height:100vh;margin:0;padding:20px 15px 120px;
+    text-align:center; /* requirement: all text centered */
+  }
+
+  /* ── Snowfall canvas ─────────────────────────────────────────────────────── */
+  #snow-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+  /* ── All content above snow ──────────────────────────────────────────────── */
+  .wm-shell{position:relative;z-index:1}
+  .wm-shell *{text-align:center}
   .wm-shell{text-transform:capitalize}
 
-  /* ── Nav ──────────────────────────────────────────────────────────────────── */
+  /* ── Nav ─────────────────────────────────────────────────────────────────── */
   .top-nav{display:flex;justify-content:center;gap:15px;margin-bottom:25px;position:relative;z-index:50}
-  .btn-nav{background:rgba(255,255,255,.7);border:2px solid #e2e8f0;border-radius:50px;padding:8px 24px;font-weight:800;font-size:14px;cursor:pointer;transition:.3s;color:var(--ink);text-decoration:none;display:inline-block}
+  .btn-nav{background:rgba(255,255,255,.75);border:2px solid #e2e8f0;border-radius:50px;padding:8px 24px;font-weight:800;font-size:14px;cursor:pointer;transition:.3s;color:var(--ink);text-decoration:none;display:inline-block;backdrop-filter:blur(8px)}
   .btn-nav:hover,.btn-nav.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 
-  /* ── Loading overlay ──────────────────────────────────────────────────────── */
-  #loading-overlay{position:fixed;inset:0;background:rgba(224,231,255,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .5s cubic-bezier(.8,0,.2,1);backdrop-filter:blur(5px)}
-  .skeleton-box{background:rgba(255,255,255,.6);border-radius:12px;margin-bottom:20px;animation:pulse-bg 1.5s infinite ease-in-out}
-  @keyframes pulse-bg{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
+  /* ── Loading overlay ─────────────────────────────────────────────────────── */
+  #loading-overlay{position:fixed;inset:0;background:rgba(199,210,254,.97);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .5s cubic-bezier(.8,0,.2,1);backdrop-filter:blur(8px)}
+  .skeleton-box{background:rgba(255,255,255,.7);border-radius:12px;margin-bottom:20px;animation:pulse-bg 1.5s infinite ease-in-out}
+  @keyframes pulse-bg{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
   .slide-up{transform:translateY(-100%)}
   .spinner{width:50px;height:50px;border:5px solid #fff;border-top:5px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .loading-text-anim{font-weight:800;font-size:18px;letter-spacing:1px}
+  .loading-text-anim{font-weight:800;font-size:18px;letter-spacing:1px;color:var(--primary)}
 
-  /* ── Glass panel ──────────────────────────────────────────────────────────── */
-  .glass-panel{background:rgba(255,255,255,.95);padding:25px;border-radius:20px;box-shadow:0 15px 40px rgba(0,0,0,.1);max-width:900px;margin:0 auto;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);position:relative}
+  /* ── Glass panel ─────────────────────────────────────────────────────────── */
+  .glass-panel{
+    background:rgba(255,255,255,.96);padding:25px;border-radius:24px;
+    box-shadow:0 20px 60px rgba(79,70,229,.15),0 4px 20px rgba(0,0,0,.06);
+    max-width:900px;margin:0 auto;
+    backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.85);
+    position:relative;text-align:center;
+  }
 
-  /* ── Report container ─────────────────────────────────────────────────────── */
+  /* ── Logo top-left ────────────────────────────────────────────────────────── */
+  .panel-logo{
+    position:absolute;top:14px;left:16px;
+    width:46px;height:46px;border-radius:12px;
+    object-fit:cover;box-shadow:0 4px 12px rgba(79,70,229,.2);
+    border:2px solid rgba(79,70,229,.12);cursor:default;
+  }
+
+  /* ── Toolbar (hidden by default, revealed on double-click) ───────────────── */
+  #btn-container{
+    display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+    gap:16px;max-width:900px;margin:0 auto 20px;
+    /* hidden until double-click unlocks */
+    opacity:0;pointer-events:none;
+    transition:opacity .4s;
+    position:relative;z-index:10;
+  }
+  #btn-container.unlocked{opacity:1;pointer-events:all}
+
+  .btn-pdf{background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;transition:.2s;border:none;gap:8px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
+  .btn-pdf:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.15)}
+  .btn-pdf:disabled{opacity:.5;cursor:not-allowed}
+
+  select{
+    appearance:none;border-radius:10px!important;padding:12px 20px!important;
+    border:2px solid #e0e7ff!important;font-weight:800;color:var(--ink);
+    cursor:pointer;outline:none;transition:.3s;
+    text-align:center;min-width:160px;
+  }
+  select:focus{border-color:var(--primary)!important;box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+
+  /* ── Unlock hint text ─────────────────────────────────────────────────────── */
+  #hint-text{
+    font-size:11px;font-weight:700;color:rgba(79,70,229,.4);
+    margin:0 auto 14px;letter-spacing:.3px;user-select:none;
+  }
+  #hint-text.unlocked-hint{color:rgba(16,185,129,.7)}
+
+  /* ── Report container ────────────────────────────────────────────────────── */
   #report-container{max-width:850px;margin:0 auto;display:none}
-  .pdf-safe-chunk{page-break-inside:avoid!important;break-inside:avoid!important;margin-bottom:2rem;border-radius:12px;overflow:hidden;border:1px solid #cbd5e1;box-shadow:0 4px 6px rgba(0,0,0,.02)}
+  .pdf-safe-chunk{page-break-inside:avoid!important;break-inside:avoid!important;margin-bottom:2rem;border-radius:12px;overflow:hidden;border:1px solid #c7d2fe;box-shadow:0 4px 6px rgba(0,0,0,.03)}
 
   /* ── Table colours ────────────────────────────────────────────────────────── */
   .bg-section-head{background-color:#e0e7ff!important}
   .bg-city,.bg-store,.bg-coach{background-color:#f1f5f9!important}
   .bg-pendency{background-color:#fee2e2!important}
   .bg-completion{background-color:#dcfce3!important}
-  .bg-total-row td{background-color:#cbd5e1!important}
+  .bg-total-row td{background-color:#c7d2fe!important}
   .alert-red{background-color:#fee2e2!important}
   .normal-white{background-color:#fff!important}
 
-  /* ── Table base ───────────────────────────────────────────────────────────── */
-  table{width:100%;border-collapse:collapse!important;background:#fff;border:1px solid #cbd5e1!important;box-sizing:border-box;margin-bottom:0}
-  th,td{border:1px solid #cbd5e1!important;text-align:center;vertical-align:middle;color:#000!important}
-  .table-title{font-size:14px!important;padding:12px!important;border-bottom:2px solid #cbd5e1!important}
+  /* ── Table base ──────────────────────────────────────────────────────────── */
+  table{width:100%;border-collapse:collapse!important;background:#fff;border:1px solid #c7d2fe!important;box-sizing:border-box;margin-bottom:0}
+  th,td{border:1px solid #c7d2fe!important;text-align:center!important;vertical-align:middle;color:var(--ink)!important}
+  .table-title{font-size:14px!important;padding:12px!important;border-bottom:2px solid #c7d2fe!important;font-weight:900!important}
   th{font-weight:800;font-size:12px;padding:12px 8px}
   td{font-weight:700;font-size:11px;padding:10px}
   tfoot td{font-weight:800;font-size:12px}
 
-  /* ── Toolbar ──────────────────────────────────────────────────────────────── */
-  #btn-container{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px;max-width:900px;margin:0 auto 20px}
-  .btn-pdf{background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;transition:.2s;border:none;gap:8px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
-  .btn-pdf:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.15)}
-  .btn-pdf:disabled{opacity:.5;cursor:not-allowed}
-  select{appearance:none;border-radius:10px!important;padding:12px 20px!important;border:2px solid #e2e8f0!important;font-weight:800;color:#000;cursor:pointer;outline:none;transition:.3s}
-  select:focus{border-color:var(--primary)!important;box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+  /* ── AI Panel ────────────────────────────────────────────────────────────── */
+  #aiPanel{
+    margin:0 auto 20px;text-align:center;
+    background:linear-gradient(135deg,rgba(79,70,229,.05),rgba(129,140,248,.05));
+    border:1.5px solid rgba(79,70,229,.15);border-radius:16px;
+    padding:14px 18px;max-width:850px;display:none;
+  }
+  .ai-header{font-weight:900;font-size:12px;letter-spacing:.8px;color:var(--primary);margin-bottom:10px;text-transform:uppercase;display:flex;align-items:center;gap:8px;justify-content:center}
+  .ai-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);animation:ai-pulse 1.4s infinite}
+  @keyframes ai-pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+  .ai-chips-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+  .ai-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:10px;font-size:12px;font-weight:700}
+  .ai-warn{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+  .ai-good{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+  .ai-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 
-  /* ── Toast ────────────────────────────────────────────────────────────────── */
-  #toast-container{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;display:none}
-  .toast-msg{background:var(--ink);color:#fff;padding:12px 24px;border-radius:50px;font-weight:800;font-size:14px;box-shadow:0 10px 25px rgba(0,0,0,.3)}
+  /* ── Toast ───────────────────────────────────────────────────────────────── */
+  #toast-container{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:9999;display:none}
+  .toast-msg{background:var(--ink);color:#fff;padding:12px 26px;border-radius:50px;font-weight:800;font-size:14px;box-shadow:0 10px 28px rgba(0,0,0,.28)}
 
-  /* ── Print ────────────────────────────────────────────────────────────────── */
+  /* ── Mascot stand (bottom-right) ─────────────────────────────────────────── */
+  #mascot-wrap{
+    position:fixed;right:0;bottom:0;z-index:50;width:150px;
+    transform:translateY(100%);transition:transform .7s cubic-bezier(.22,1,.36,1);
+    pointer-events:none;
+  }
+  #mascot-wrap.show{transform:translateY(0)}
+  #mascot-img{width:100%;display:block;pointer-events:all;cursor:pointer}
+  #mascot-close{
+    position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;font-size:14px;line-height:24px;
+    text-align:center;cursor:pointer;pointer-events:all;display:none;transition:.2s;
+  }
+  #mascot-wrap:hover #mascot-close{display:block}
+  #mascot-close:hover{background:rgba(239,68,68,.9);transform:scale(1.1)}
+  #mascot-btn{
+    position:fixed;right:16px;bottom:16px;z-index:51;
+    background:var(--primary);color:#fff;border:none;border-radius:50px;
+    padding:8px 16px;font-weight:800;font-size:12px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(79,70,229,.4);display:none;
+    animation:float-btn 2s ease-in-out infinite;
+  }
+  @keyframes float-btn{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+  /* ── Print ───────────────────────────────────────────────────────────────── */
   @media print{
     .no-print{display:none!important}
-    body{background:#fff}
+    #snow-canvas,#mascot-wrap,#mascot-btn,#toast-container,#aiPanel,#hint-text{display:none!important}
+    body{background:#fff;padding:0}
     .glass-panel{background:#fff;border:none;box-shadow:none;padding:0}
     #report-container{max-width:100%;padding:10px}
   }
 </style>
 </head>
 <body>
+
+<!-- ── Snowfall canvas ──────────────────────────────────────────────────────── -->
+<canvas id="snow-canvas"></canvas>
+
+<!-- ── Loading overlay ────────────────────────────────────────────────────── -->
 <div id="loading-overlay">
-  <div class="skeleton-box" style="width:300px;height:40px"></div>
-  <div class="skeleton-box" style="width:600px;height:50px"></div>
+  <div class="skeleton-box" style="width:280px;height:36px"></div>
+  <div class="skeleton-box" style="width:560px;height:48px;max-width:90vw"></div>
   <div class="spinner"></div>
   <div class="loading-text-anim">~ : Welcome :~</div>
 </div>
 
+<!-- ── Main shell ──────────────────────────────────────────────────────────── -->
 <div class="wm-shell">
-  <div class="top-nav">
+  <div class="top-nav no-print">
     <a href="index.html" class="btn-nav">Pendency Dashboard</a>
     <button class="btn-nav active">Daily Completion</button>
   </div>
 
+  <!-- Trainer + Export (double-click to unlock) -->
   <div id="btn-container" class="no-print">
     <select id="col10Filter" onchange="applyFilter()">
       <option value="ALL">All Trainer</option>
@@ -101,7 +198,19 @@
     </button>
   </div>
 
+  <!-- Hint text -->
+  <div id="hint-text" class="no-print">Double-click anywhere to reveal trainer &amp; export controls</div>
+
+  <!-- AI Panel -->
+  <div id="aiPanel" class="no-print">
+    <div class="ai-header"><span class="ai-dot"></span>AI Analysis</div>
+    <div id="aiChips" class="ai-chips-row"></div>
+  </div>
+
   <div class="glass-panel">
+    <!-- Logo top-left -->
+    <img src="logo.jpg" alt="WM Logo" class="panel-logo no-print">
+
     <div id="report-container">
       <div id="cityContainer"></div>
       <div id="coachContainer"></div>
@@ -111,155 +220,304 @@
   </div>
 </div>
 
+<!-- ── Toast ───────────────────────────────────────────────────────────────── -->
 <div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
+<!-- ── Mascot stand ─────────────────────────────────────────────────────────── -->
+<div id="mascot-wrap">
+  <span id="mascot-close" title="Hide">✕</span>
+  <img id="mascot-img" src="mascot.jpg" alt="WM Mascot">
+</div>
+<button id="mascot-btn" onclick="showMascot()">👧 Show</button>
+
+<!-- ── Scripts ────────────────────────────────────────────────────────────── -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js" defer></script>
 <script src="wm-shared.js" defer></script>
 <script defer>
-  const API_URL = "https://script.google.com/macros/s/AKfycbzCApky64d1Texcqaq67XP57rSRULR7RUnsqrYatGTjsHX7AW-ArAN5jO-59nSRFEVy/exec";
+/* ═══════════════════════════════════════════════════════════════════════════
+   WM Daily Completion — report.js (inline)
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-  // ── State ────────────────────────────────────────────────────────────────────
-  let reportData = null;
-  let loaderDismissed = false;
+const API_URL = "https://script.google.com/macros/s/AKfycbzCApky64d1Texcqaq67XP57rSRULR7RUnsqrYatGTjsHX7AW-ArAN5jO-59nSRFEVy/exec";
+const DEFAULT_TRAINER = 'Dhrubajyoti Dutta';
 
-  // ── Loader ───────────────────────────────────────────────────────────────────
-  function hideLoader() {
-    if (loaderDismissed) return;
-    loaderDismissed = true;
-    const loader = document.getElementById('loading-overlay');
-    loader.classList.add('slide-up');
-    setTimeout(() => { loader.style.display = 'none'; }, 550);
+// ── State ──────────────────────────────────────────────────────────────────
+let reportData    = null;
+let loaderDismissed = false;
+let controlsUnlocked = false;
+
+/* ────────────────────────────────────────────────────────────────────────────
+   ❄️  SNOWFALL (identical to index.html)
+──────────────────────────────────────────────────────────────────────────── */
+(function initSnow() {
+  const canvas = document.getElementById('snow-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, flakes = [];
+  const COUNT = 90;
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  function rnd(a, b) { return Math.random() * (b - a) + a; }
+  function mk() { return { x:rnd(0,W), y:rnd(-H,0), r:rnd(2,5.5), speed:rnd(.6,2.2), drift:rnd(-.4,.4), alpha:rnd(.3,.85), wobble:rnd(0,Math.PI*2), wobbleSpeed:rnd(.01,.03) }; }
+  for (let i = 0; i < COUNT; i++) flakes.push({ ...mk(), y:rnd(0,H) });
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    flakes.forEach(f => {
+      f.wobble += f.wobbleSpeed; f.x += f.drift + Math.sin(f.wobble)*.4; f.y += f.speed;
+      if (f.y > H+10) { Object.assign(f, mk()); f.y=-10; f.x=rnd(0,W); }
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${f.alpha})`; ctx.shadowColor='rgba(255,255,255,.6)'; ctx.shadowBlur=4;
+      ctx.fill(); ctx.shadowBlur=0;
+    });
+    requestAnimationFrame(draw);
   }
+  draw();
+})();
 
-  // ── Toast ────────────────────────────────────────────────────────────────────
-  function showToast(msg, isError = false) {
-    const container = document.getElementById('toast-container');
-    const txt = document.getElementById('toastText');
-    txt.textContent = msg;
-    txt.style.background = isError ? '#ef4444' : '#000';
-    container.style.display = 'block';
-    setTimeout(() => { container.style.display = 'none'; }, 2500);
-  }
+/* ────────────────────────────────────────────────────────────────────────────
+   🎭  MASCOT STAND
+──────────────────────────────────────────────────────────────────────────── */
+function showMascot() {
+  document.getElementById('mascot-wrap').classList.add('show');
+  document.getElementById('mascot-btn').style.display = 'none';
+}
+(function initMascot() {
+  setTimeout(showMascot, 2500);
+  document.getElementById('mascot-close').addEventListener('click', () => {
+    document.getElementById('mascot-wrap').classList.remove('show');
+    document.getElementById('mascot-btn').style.display = 'block';
+  });
+})();
 
-  // ── Data loading ─────────────────────────────────────────────────────────────
-  /**
-   * The trainer filter is resolved server-side, so changing it re-fetches.
-   * Each trainer+ALL combination gets its own cache key so switching is instant
-   * on a second visit within the TTL window.
-   */
-  async function loadData() {
-    const trainer = document.getElementById('col10Filter').value || 'ALL';
-    const url = `${API_URL}?action=completion&trainer=${encodeURIComponent(trainer)}`;
-    const cacheKey = `wm:completion:${trainer}`;
-    try {
-      await WM.fetchWithCache(url, cacheKey, (data, fromCache) => {
-        processData(data);
-        if (!fromCache) hideLoader();
-      });
-      hideLoader();
-    } catch (err) {
-      showToast(err.message || 'Error loading data', true);
-      hideLoader();
+/* ────────────────────────────────────────────────────────────────────────────
+   🔒  DOUBLE-CLICK UNLOCK — trainer selector + export button
+   Default trainer is set to DEFAULT_TRAINER once controls become visible.
+──────────────────────────────────────────────────────────────────────────── */
+(function initUnlock() {
+  let clicks = 0, timer;
+  document.addEventListener('click', e => {
+    // Don't count clicks on the toolbar itself (already unlocked)
+    if (e.target.closest('#btn-container')) return;
+    clicks++;
+    clearTimeout(timer);
+    timer = setTimeout(() => { clicks = 0; }, 400);
+
+    if (clicks >= 2 && !controlsUnlocked) {
+      clicks = 0;
+      controlsUnlocked = true;
+      const container = document.getElementById('btn-container');
+      container.classList.add('unlocked');
+      const hint = document.getElementById('hint-text');
+      hint.textContent = '✅ Admin controls unlocked';
+      hint.classList.add('unlocked-hint');
+
+      // Set default trainer selection
+      const filter = document.getElementById('col10Filter');
+      const opt = [...filter.options].find(o => o.value === DEFAULT_TRAINER);
+      if (opt) { filter.value = DEFAULT_TRAINER; applyFilter(); }
+
+      showToast(`Unlocked — trainer: ${DEFAULT_TRAINER}`, false);
+    } else if (clicks >= 2 && controlsUnlocked) {
+      clicks = 0;
+      // Already unlocked — toggle back
+      controlsUnlocked = false;
+      document.getElementById('btn-container').classList.remove('unlocked');
+      const hint = document.getElementById('hint-text');
+      hint.textContent = 'Double-click anywhere to reveal trainer & export controls';
+      hint.classList.remove('unlocked-hint');
+    }
+  });
+})();
+
+/* ────────────────────────────────────────────────────────────────────────────
+   🤖  AI ANALYSIS ENGINE
+   Analyses the three summary dimensions (city, coach, store) and generates
+   reasoned observations using heuristics:
+   - Completion rate ranking (best / worst performers)
+   - Pendency-to-completion ratio (efficiency signal)
+   - Stall detection (pending > N, completion = 0)
+   - Data quality (FC name missing fraction)
+──────────────────────────────────────────────────────────────────────────── */
+function computeAI(data, threshold) {
+  if (!data) return [];
+  const chips = [];
+
+  // ── Completion velocity across cities ─────────────────────────────────────
+  const cityRows = data.summary.city.rows.filter(r => r.pendency > 0);
+  if (cityRows.length) {
+    const best = cityRows.reduce((a,b) => (b.completion/b.pendency > a.completion/a.pendency ? b : a));
+    const worst = cityRows.reduce((a,b) => (b.completion/b.pendency < a.completion/a.pendency ? b : a));
+    if (best.completion > 0) {
+      const pct = Math.round((best.completion / best.pendency) * 100);
+      chips.push({ tone:'good', icon:'🏆', text:`${best.name} leads with ${pct}% clearance rate today` });
+    }
+    if (worst.completion === 0 && worst.pendency > 0) {
+      chips.push({ tone:'warn', icon:'🛑', text:`${worst.name} has ${worst.pendency} pending and zero completions today` });
     }
   }
 
-  // ── Process & render ─────────────────────────────────────────────────────────
-  function processData(data) {
-    reportData = data;
-    const filter = document.getElementById('col10Filter');
-    const selected = data.selectedTrainer || 'ALL';
-
-    // Rebuild trainer options without flicker
-    filter.replaceChildren();
-    filter.add(new Option('All Trainer', 'ALL'));
-    (data.trainers || []).forEach(t => filter.add(new Option(t, t)));
-    filter.value = [...filter.options].some(o => o.value === selected) ? selected : 'ALL';
-
-    const threshold = data.alertThreshold || 10;
-    renderTable('cityContainer',  'City Wise Completion Report',   'City Name',       'bg-city',  data.summary.city.rows,   data.summary.city.totals,  threshold);
-    renderTable('coachContainer', 'Fleet Coach Wise Report',       'Fleet Coach',     'bg-coach', data.summary.coach.rows,  data.summary.coach.totals, threshold);
-    renderTable('storeContainer', 'Store Wise Completion Report',  'Dark Store Name', 'bg-store', data.summary.store.rows,  data.summary.store.totals, threshold);
-
-    document.getElementById('report-container').style.display = 'block';
+  // ── Overall progress bar reasoning ────────────────────────────────────────
+  const totC = data.summary.city.totals;
+  if (totC.pendency > 0) {
+    const rate = Math.round((totC.completion / totC.pendency) * 100);
+    if (rate < 20)      chips.push({ tone:'warn', icon:'📉', text:`Overall completion rate is only ${rate}% — push for accelerated closures` });
+    else if (rate > 60) chips.push({ tone:'good', icon:'🚀', text:`Strong day! Overall ${rate}% clearance rate across all cities` });
+    else                chips.push({ tone:'info', icon:'📊', text:`${rate}% overall clearance (${totC.completion} of ${totC.pendency}) — steady progress` });
   }
 
-  function applyFilter() { loadData(); }
-
-  // ── Table renderer ────────────────────────────────────────────────────────────
-  const ROWS_PER_CHUNK = 35;
-
-  function renderTable(containerId, title, colHeader, colHeaderClass, dataArray, totals, threshold) {
-    const container = document.getElementById(containerId);
-
-    if (!dataArray.length) {
-      container.innerHTML =
-        `<div class="pdf-safe-chunk"><table>` +
-        `<thead><tr><th colspan="3" class="table-title bg-section-head">${title}</th></tr>` +
-        `<tr><th class="${colHeaderClass}" style="width:40%">${colHeader}</th>` +
-        `<th class="bg-pendency" style="width:30%">Total Pendency</th>` +
-        `<th class="bg-completion" style="width:30%">Today's Completion</th></tr></thead>` +
-        `<tbody><tr><td colspan="3" style="padding:20px;font-weight:800">No data available for this selection.</td></tr></tbody>` +
-        `</table></div>`;
-      return;
-    }
-
-    // Build all chunks; use string concatenation (fast for many small tables)
-    let html = '';
-    for (let i = 0; i < dataArray.length; i += ROWS_PER_CHUNK) {
-      const chunk = dataArray.slice(i, i + ROWS_PER_CHUNK);
-      const isFirst = i === 0;
-      const isLast  = i + ROWS_PER_CHUNK >= dataArray.length;
-
-      let t = '<div class="pdf-safe-chunk"><table><thead>';
-      if (isFirst) t += `<tr><th colspan="3" class="table-title bg-section-head">${title}</th></tr>`;
-      t += `<tr><th class="${colHeaderClass}" style="width:40%">${colHeader}</th>` +
-           `<th class="bg-pendency" style="width:30%">Total Pendency</th>` +
-           `<th class="bg-completion" style="width:30%">Today's Completion</th></tr></thead><tbody>`;
-
-      chunk.forEach(item => {
-        const cls = item.completion < threshold ? 'alert-red' : 'normal-white';
-        const nameHtml = item.name === 'FC Name Missing'
-          ? '<span style="background:#fee2e2;color:#b91c1c;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:800;border:1px solid #fca5a5;display:inline-block">FC Name Missing</span>'
-          : WM.escapeHtml(item.name);
-        t += `<tr><td>${nameHtml}</td><td>${item.pendency}</td><td class="${cls}">${item.completion}</td></tr>`;
-      });
-
-      t += '</tbody>';
-      if (isLast) {
-        t += `<tfoot><tr class="bg-total-row"><td>TOTAL</td><td>${totals.pendency}</td><td>${totals.completion}</td></tr></tfoot>`;
-      }
-      t += '</table></div>';
-      html += t;
-      if (!isLast) html += '<div class="html2pdf__page-break"></div>';
-    }
-    container.innerHTML = html;
+  // ── Fleet coach attribution gap ───────────────────────────────────────────
+  const missing = data.summary.coach.rows.find(r => r.name === 'FC Name Missing');
+  if (missing && data.summary.coach.totals.pendency > 0) {
+    const pct = Math.round((missing.pendency / data.summary.coach.totals.pendency) * 100);
+    if (pct > 10) chips.push({ tone:'warn', icon:'🔍', text:`${pct}% of pendency has no Fleet Coach — source sheet mapping needs attention` });
   }
 
-  // ── PDF export ───────────────────────────────────────────────────────────────
-  function exportReport() {
-    const element = document.getElementById('report-container');
-    const btn = document.getElementById('exportBtn');
-    const orig = btn.innerHTML;
-    btn.textContent = 'Generating PDF…';
-    btn.disabled = true;
-    html2pdf()
-      .set({
-        margin: [0.4, 0.4, 0.4, 0.4],
-        filename: 'WM_Completion_Report.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: 'css' }
-      })
-      .from(element)
-      .save()
-      .finally(() => {
-        btn.innerHTML = orig;
-        btn.disabled = false;
-      });
+  // ── Low-completion stores alert ───────────────────────────────────────────
+  const alertStores = (data.summary.store.rows || []).filter(r => r.pendency > 0 && r.completion < threshold).length;
+  if (alertStores > 0) {
+    chips.push({ tone:'warn', icon:'⚠️', text:`${alertStores} store${alertStores>1?'s':''} below the ${threshold}-completion threshold today` });
   }
 
-  document.addEventListener('DOMContentLoaded', loadData);
+  return chips.slice(0, 5);
+}
+
+function renderAI(data, threshold) {
+  const panel = document.getElementById('aiPanel');
+  const chips = computeAI(data, threshold);
+  if (!chips.length) { panel.style.display = 'none'; return; }
+  const toneClass = { warn:'ai-warn', good:'ai-good', info:'ai-info' };
+  document.getElementById('aiChips').innerHTML = chips
+    .map(c => `<div class="ai-chip ${toneClass[c.tone]}">${c.icon} ${c.text}</div>`)
+    .join('');
+  panel.style.display = 'block';
+}
+
+// ── Loader ──────────────────────────────────────────────────────────────────
+function hideLoader() {
+  if (loaderDismissed) return;
+  loaderDismissed = true;
+  const loader = document.getElementById('loading-overlay');
+  loader.classList.add('slide-up');
+  setTimeout(() => { loader.style.display = 'none'; }, 550);
+}
+
+// ── Toast ───────────────────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const container = document.getElementById('toast-container');
+  const txt = document.getElementById('toastText');
+  txt.textContent = msg;
+  txt.style.background = isError ? '#ef4444' : '#1e1b4b';
+  container.style.display = 'block';
+  setTimeout(() => { container.style.display = 'none'; }, 2800);
+}
+
+// ── Data loading ─────────────────────────────────────────────────────────────
+async function loadData() {
+  const trainer  = document.getElementById('col10Filter').value || 'ALL';
+  const url      = `${API_URL}?action=completion&trainer=${encodeURIComponent(trainer)}`;
+  const cacheKey = `wm:completion:${trainer}`;
+  try {
+    await WM.fetchWithCache(url, cacheKey, (data, fromCache) => {
+      processData(data);
+      if (!fromCache) hideLoader();
+    });
+    hideLoader();
+  } catch (err) {
+    showToast(err.message || 'Error loading data', true);
+    hideLoader();
+  }
+}
+
+// ── Process & render ─────────────────────────────────────────────────────────
+function processData(data) {
+  reportData = data;
+  const filter   = document.getElementById('col10Filter');
+  const selected = data.selectedTrainer || 'ALL';
+
+  filter.replaceChildren();
+  filter.add(new Option('All Trainer', 'ALL'));
+  (data.trainers || []).forEach(t => filter.add(new Option(t, t)));
+  filter.value = [...filter.options].some(o => o.value === selected) ? selected : 'ALL';
+
+  const threshold = data.alertThreshold || 10;
+  renderTable('cityContainer',  'City Wise Completion Report',   'City Name',       'bg-city',  data.summary.city.rows,  data.summary.city.totals,  threshold);
+  renderTable('coachContainer', 'Fleet Coach Wise Report',       'Fleet Coach',     'bg-coach', data.summary.coach.rows, data.summary.coach.totals, threshold);
+  renderTable('storeContainer', 'Store Wise Completion Report',  'Dark Store Name', 'bg-store', data.summary.store.rows, data.summary.store.totals, threshold);
+
+  renderAI(data, threshold);
+  document.getElementById('report-container').style.display = 'block';
+}
+
+function applyFilter() { loadData(); }
+
+// ── Table renderer ───────────────────────────────────────────────────────────
+const ROWS_PER_CHUNK = 35;
+
+function renderTable(containerId, title, colHeader, colHeaderClass, dataArray, totals, threshold) {
+  const container = document.getElementById(containerId);
+  if (!dataArray.length) {
+    container.innerHTML =
+      `<div class="pdf-safe-chunk"><table>` +
+      `<thead><tr><th colspan="3" class="table-title bg-section-head">${title}</th></tr>` +
+      `<tr><th class="${colHeaderClass}" style="width:40%">${colHeader}</th>` +
+      `<th class="bg-pendency" style="width:30%">Total Pendency</th>` +
+      `<th class="bg-completion" style="width:30%">Today's Completion</th></tr></thead>` +
+      `<tbody><tr><td colspan="3" style="padding:20px;font-weight:800">No data for this selection.</td></tr></tbody>` +
+      `</table></div>`;
+    return;
+  }
+
+  let html = '';
+  for (let i = 0; i < dataArray.length; i += ROWS_PER_CHUNK) {
+    const chunk  = dataArray.slice(i, i + ROWS_PER_CHUNK);
+    const isFirst = i === 0;
+    const isLast  = i + ROWS_PER_CHUNK >= dataArray.length;
+
+    let t = '<div class="pdf-safe-chunk"><table><thead>';
+    if (isFirst) t += `<tr><th colspan="3" class="table-title bg-section-head">${title}</th></tr>`;
+    t += `<tr><th class="${colHeaderClass}" style="width:40%">${colHeader}</th>` +
+         `<th class="bg-pendency" style="width:30%">Total Pendency</th>` +
+         `<th class="bg-completion" style="width:30%">Today's Completion</th></tr></thead><tbody>`;
+
+    chunk.forEach(item => {
+      const cls     = item.completion < threshold ? 'alert-red' : 'normal-white';
+      const nameHtml = item.name === 'FC Name Missing'
+        ? '<span style="background:#fee2e2;color:#b91c1c;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:800;border:1px solid #fca5a5;display:inline-block">FC Name Missing</span>'
+        : WM.escapeHtml(item.name);
+      t += `<tr><td>${nameHtml}</td><td>${item.pendency}</td><td class="${cls}">${item.completion}</td></tr>`;
+    });
+
+    t += '</tbody>';
+    if (isLast) t += `<tfoot><tr class="bg-total-row"><td>TOTAL</td><td>${totals.pendency}</td><td>${totals.completion}</td></tr></tfoot>`;
+    t += '</table></div>';
+    html += t;
+    if (!isLast) html += '<div class="html2pdf__page-break"></div>';
+  }
+  container.innerHTML = html;
+}
+
+// ── PDF export ───────────────────────────────────────────────────────────────
+function exportReport() {
+  const element = document.getElementById('report-container');
+  const btn     = document.getElementById('exportBtn');
+  const orig    = btn.innerHTML;
+  btn.textContent = 'Generating PDF…';
+  btn.disabled    = true;
+  html2pdf()
+    .set({
+      margin: [0.4,0.4,0.4,0.4],
+      filename: 'WM_Completion_Report.pdf',
+      image: { type:'jpeg', quality:0.98 },
+      html2canvas: { scale:2, useCORS:true, logging:false },
+      jsPDF: { unit:'in', format:'a4', orientation:'portrait' },
+      pagebreak: { mode:'css' }
+    })
+    .from(element)
+    .save()
+    .finally(() => { btn.innerHTML = orig; btn.disabled = false; });
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
 </html>
