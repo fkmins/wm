@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>WM Pendency Dashboard</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="WM Pendency Dashboard — track dark store and fleet coach wise training pendency in real time.">
 <meta name="theme-color" content="#4f46e5">
 <link rel="icon" type="image/png" href="https://disprz.ai/hubfs/Favicon_64%20px%20reverse-final%20(2).png">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -18,24 +19,34 @@
   .top-nav{display:flex;justify-content:center;gap:15px;margin-bottom:25px}
   .btn-nav{background:rgba(255,255,255,.7);border:2px solid #e2e8f0;border-radius:50px;padding:8px 24px;font-weight:800;font-size:14px;cursor:pointer;transition:.3s;color:var(--ink);text-decoration:none;display:inline-block}
   .btn-nav:hover,.btn-nav.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-  #loading-overlay{position:fixed;inset:0;background:rgba(224,231,255,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .7s cubic-bezier(.8,0,.2,1);backdrop-filter:blur(5px)}
+
+  /* ── Loading overlay ──────────────────────────────────────────────────────── */
+  #loading-overlay{position:fixed;inset:0;background:rgba(224,231,255,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .5s cubic-bezier(.8,0,.2,1);backdrop-filter:blur(5px)}
   .skeleton-box{background:rgba(255,255,255,.6);border-radius:12px;margin-bottom:20px;animation:pulse-bg 1.5s infinite ease-in-out}
   @keyframes pulse-bg{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
   .slide-up{transform:translateY(-100%)}
   .spinner{width:50px;height:50px;border:5px solid #fff;border-top:5px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text-anim{font-weight:800;font-size:18px;letter-spacing:1px}
+
+  /* ── Glass card ───────────────────────────────────────────────────────────── */
   .glass-panel{background:var(--bg-glass);border-radius:20px;padding:35px 25px;box-shadow:0 15px 40px rgba(0,0,0,.1);width:100%;max-width:900px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);margin:auto}
+
+  /* ── Mode tabs ────────────────────────────────────────────────────────────── */
   .tab-container{display:flex;justify-content:center;gap:15px;margin-bottom:25px}
   .btn-mode{border:none;padding:12px 20px;border-radius:12px;font-weight:800;background:#e2e8f0;color:var(--ink);transition:.3s;flex:1;max-width:250px;font-size:14px}
   .btn-mode:hover:not(.mode-active){background:#cbd5e1;transform:translateY(-2px)}
   .mode-active{background:var(--primary)!important;color:#fff!important;box-shadow:0 4px 12px rgba(79,70,229,.3)!important}
+
+  /* ── Selectors ────────────────────────────────────────────────────────────── */
   .ts-control,.form-select{border-radius:12px!important;padding:14px!important;border:2px solid #e2e8f0!important;background:#fff!important;cursor:pointer;text-align-last:center!important;transition:.3s}
   .ts-control.focus,.form-select:focus{border-color:var(--primary)!important;box-shadow:0 0 0 3px rgba(79,70,229,.15)!important;outline:none}
   .ts-control .item,.ts-control input{width:100%!important;font-weight:800;font-size:15px;color:var(--ink)!important}
   .ts-dropdown{border-radius:12px!important;border:1px solid #e2e8f0;box-shadow:0 10px 25px rgba(0,0,0,.15);padding:5px}
   .ts-dropdown .option{padding:12px;font-weight:800;border-radius:8px;margin-bottom:2px;color:var(--ink)!important;transition:.2s}
   .ts-dropdown .option:hover,.ts-dropdown .active{background-color:#e0e7ff!important;color:var(--primary)!important}
+
+  /* ── Results ──────────────────────────────────────────────────────────────── */
   #resultArea{margin-top:35px;flex-direction:column;align-items:center}
   .badge-pendency{background:var(--primary);color:#fff;padding:12px 30px;border-radius:50px;font-weight:800;margin-bottom:25px;font-size:16px;box-shadow:0 4px 15px rgba(0,0,0,.15);display:inline-block}
   .action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:25px;width:100%}
@@ -44,6 +55,8 @@
   .btn-action:disabled{opacity:.5;cursor:not-allowed}
   .btn-pdf{background:var(--primary);color:#fff}
   .btn-sheet{background:#10b981;color:#fff}
+
+  /* ── Table ────────────────────────────────────────────────────────────────── */
   .table-responsive{background:#fff;border-radius:12px;overflow:hidden;width:100%;border:1px solid #e2e8f0;margin-bottom:20px}
   .table{margin-bottom:0;width:100%;border-collapse:collapse}
   .table thead th{background:#f8fafc;border-bottom:2px solid #e2e8f0;padding:16px;font-size:13px;font-weight:800}
@@ -52,19 +65,16 @@
   .table td{padding:18px;font-weight:800;font-size:14px;vertical-align:middle}
   .badge-count{background-color:var(--primary);color:#fff;padding:8px 0;border-radius:25px;font-size:15px;font-weight:800;min-width:90px;display:inline-block}
   .fc-missing-pill{background-color:#fee2e2;color:#b91c1c;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:800;border:1px solid #fca5a5;display:inline-block}
+
+  /* ── Pagination ───────────────────────────────────────────────────────────── */
   .pagination-container{display:flex;justify-content:center;align-items:center;gap:15px;margin:15px 0}
   .btn-page{padding:10px 20px;font-weight:800;border:none;background:#e2e8f0;color:var(--ink);border-radius:10px;cursor:pointer;font-size:13px}
   .btn-page:hover:not(:disabled){background:#cbd5e1}
   .btn-page:disabled{opacity:.4;cursor:not-allowed}
+
+  /* ── Toast ────────────────────────────────────────────────────────────────── */
   #toast-container{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;display:none}
   .toast-msg{background:var(--ink);color:#fff;padding:12px 24px;border-radius:50px;font-weight:800;font-size:14px;box-shadow:0 10px 25px rgba(0,0,0,.3)}
-  #dataStatus{margin:-15px 0 20px;font-weight:700;font-size:12px;color:#64748b;text-transform:none}
-  .wm-insights{margin-bottom:20px;text-align:left}
-  .wm-insights-title{font-weight:800;font-size:13px;letter-spacing:.5px;color:#64748b;margin-bottom:8px;text-transform:uppercase}
-  .wm-insight{border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:8px;text-align:left;text-transform:none}
-  .wm-insight-warn{background:#fee2e2;color:#7f1d1d}
-  .wm-insight-info{background:#e0e7ff;color:#312e81}
-  .wm-insight-good{background:#dcfce3;color:#14532d}
 </style>
 </head>
 <body>
@@ -76,247 +86,358 @@
 </div>
 
 <div class="wm-shell">
-<div class="top-nav">
-  <button class="btn-nav active">Pendency Dashboard</button>
-  <a href="report.html" class="btn-nav">Daily Completion</a>
-</div>
-
-<div class="glass-panel" id="mainPanel">
-  <h2 style="font-weight:800;margin:0 0 8px">WM Pendency Dashboard</h2>
-  <div id="dataStatus" aria-live="polite"></div>
-  <div id="insightsContainer"></div>
-
-  <div class="tab-container">
-    <button id="btnNormal" class="btn-mode mode-active" onclick="setMode(false)">Dark Store Wise</button>
-    <button id="btnCoach" class="btn-mode" onclick="setMode(true)">Fleet Coach Wise</button>
+  <div class="top-nav">
+    <button class="btn-nav active">Pendency Dashboard</button>
+    <a href="report.html" class="btn-nav">Daily Completion</a>
   </div>
 
-  <div class="row g-4 mb-4 justify-content-center">
-    <div class="col-md-5"><select id="citySelect" class="form-select w-100" disabled><option value="">Wait, Loading ...</option></select></div>
-    <div class="col-md-5" id="storeWrapper"><select id="storeSelect" class="form-select w-100" disabled><option value="">Search / Select Dark Store</option></select></div>
-  </div>
+  <div class="glass-panel" id="mainPanel">
+    <h2 style="font-weight:800;margin:0 0 24px">WM Pendency Dashboard</h2>
 
-  <div id="resultArea" style="display:none;width:100%">
-    <div class="badge-pendency">Total Pendency <span id="countBadge">0</span></div>
-    <div class="action-buttons">
-      <button id="dlPdf" class="btn-action btn-pdf" onclick="doExport('pdf')">Download as PDF</button>
-      <button id="dlSheet" class="btn-action btn-sheet" onclick="doExport('sheet')">Open as Google Sheet</button>
+    <div class="tab-container">
+      <button id="btnNormal" class="btn-mode mode-active" onclick="setMode(false)">Dark Store Wise</button>
+      <button id="btnCoach" class="btn-mode" onclick="setMode(true)">Fleet Coach Wise</button>
     </div>
-    <div class="table-responsive"><table class="table w-100"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
-    <div id="paginationControls" class="pagination-container" style="display:none">
-      <button class="btn-page" id="btnPrev" onclick="changePage(-1)">Previous</button>
-      <span id="pageIndicator" style="font-weight:800;font-size:14px">Page 1 of 1</span>
-      <button class="btn-page" id="btnNext" onclick="changePage(1)">Next</button>
+
+    <div class="row g-4 mb-4 justify-content-center">
+      <div class="col-md-5">
+        <select id="citySelect" class="form-select w-100" disabled>
+          <option value="">Wait, Loading …</option>
+        </select>
+      </div>
+      <div class="col-md-5" id="storeWrapper">
+        <select id="storeSelect" class="form-select w-100" disabled>
+          <option value="">Search / Select Dark Store</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="resultArea" style="display:none;width:100%">
+      <div class="badge-pendency">Total Pendency <span id="countBadge">0</span></div>
+      <div class="action-buttons">
+        <button id="dlPdf" class="btn-action btn-pdf" onclick="doExport('pdf')">Download as PDF</button>
+        <button id="dlSheet" class="btn-action btn-sheet" onclick="doExport('sheet')">Open as Google Sheet</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table w-100">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div id="paginationControls" class="pagination-container" style="display:none">
+        <button class="btn-page" id="btnPrev" onclick="changePage(-1)">Previous</button>
+        <span id="pageIndicator" style="font-weight:800;font-size:14px">Page 1 of 1</span>
+        <button class="btn-page" id="btnNext" onclick="changePage(1)">Next</button>
+      </div>
     </div>
   </div>
-</div>
 </div>
 
 <div id="toast-container"><div class="toast-msg" id="toastText"></div></div>
 
+<!-- Scripts loaded with defer: DOMContentLoaded fires after all defer scripts have run -->
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
 <script src="wm-shared.js" defer></script>
 <script defer>
-  // Point this at your Apps Script /exec URL.
   const API_URL = "https://script.google.com/macros/s/AKfycbzCApky64d1Texcqaq67XP57rSRULR7RUnsqrYatGTjsHX7AW-ArAN5jO-59nSRFEVy/exec";
 
-  let db = [], filtered = [], displayArray = [], coachMode = false, cityCtrl, storeCtrl;
-  let currentPage = 1, rowsPerPage = 50, totalPages = 1;
+  // ── State ────────────────────────────────────────────────────────────────────
+  let db = [];              // all pendency records
+  let filtered = [];        // records for current city + store selection
+  let displayArray = [];    // rows fed to the table (may differ in coach mode)
+  let coachMode = false;
+  let cityCtrl, storeCtrl;
+  let currentPage = 1;
+  const ROWS_PER_PAGE = 50;
 
+  // ── Toast ────────────────────────────────────────────────────────────────────
   function showToast(msg, isError = false) {
     const container = document.getElementById('toast-container');
     const txt = document.getElementById('toastText');
-    txt.innerText = msg;
+    txt.textContent = msg;
     txt.style.background = isError ? '#ef4444' : '#000';
     container.style.display = 'block';
     setTimeout(() => { container.style.display = 'none'; }, 2500);
   }
 
-  function showMetadata(metadata) {
-    const date = new Date(metadata.lastUpdatedAt);
-    document.getElementById('dataStatus').textContent = Number.isNaN(date.valueOf())
-      ? 'Last updated: unavailable'
-      : `Last updated: ${new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' }).format(date)} IST`;
+  // ── Loader ───────────────────────────────────────────────────────────────────
+  let loaderDismissed = false;
+  function hideLoader() {
+    if (loaderDismissed) return;
+    loaderDismissed = true;
+    const loader = document.getElementById('loading-overlay');
+    loader.classList.add('slide-up');
+    // Remove from layout after animation so it can't block clicks
+    setTimeout(() => { loader.style.display = 'none'; }, 550);
   }
 
-  function renderInsightsForPendency(records) {
-    // Build the same {name, pendency, completion} shape the insights engine expects,
-    // grouped by dark store, from raw pendency records (completion isn't tracked here,
-    // so this section focuses on concentration + data-quality signals only).
-    const byStore = new Map();
-    records.forEach(r => {
-      const key = `${r.city} — ${r.darkStore}`;
-      const cur = byStore.get(key) || { name: key, pendency: 0, completion: 0 };
-      cur.pendency += 1;
-      byStore.set(key, cur);
-    });
-    const rows = [...byStore.values()];
-    const totals = { pendency: rows.reduce((s, r) => s + r.pendency, 0), completion: 0 };
-    WM.renderInsights('insightsContainer', [{ label: 'Dark Store', rows, totals }], 0);
-  }
-
+  // ── Selectors ────────────────────────────────────────────────────────────────
+  /**
+   * Build city TomSelect once on first load. Store TomSelect options are
+   * swapped cheaply via clearOptions/addOption — no destroy/recreate.
+   */
   function initSelectors() {
     const cityEl = document.getElementById('citySelect');
     const storeEl = document.getElementById('storeSelect');
+
+    // Populate city <select> with sorted unique cities
     cityEl.innerHTML = '<option value="">Search / Select City</option>';
-    [...new Set(db.map(i => i.city))].sort().forEach(c => cityEl.add(new Option(c, c)));
-    cityEl.disabled = false; storeEl.disabled = false;
-    if (cityCtrl) cityCtrl.destroy();
-    if (storeCtrl) storeCtrl.destroy();
-    cityCtrl = new TomSelect('#citySelect', { create: false, sortField: { field: 'text', direction: 'asc' }, onChange: handleCityChange, maxOptions: 50 });
-    storeCtrl = new TomSelect('#storeSelect', { create: false, sortField: { field: 'text', direction: 'asc' }, onChange: updateTable, maxOptions: 50 });
-    storeCtrl.disable();
+    [...new Set(db.map(r => r.city))].sort().forEach(c => cityEl.add(new Option(c, c)));
+    cityEl.disabled = false;
+    storeEl.disabled = false;
+
+    // Build TomSelect controls once; subsequent calls to initSelectors (shouldn't
+    // happen, but guard anyway) skip if already initialised.
+    if (!cityCtrl) {
+      cityCtrl = new TomSelect('#citySelect', {
+        create: false,
+        sortField: { field: 'text', direction: 'asc' },
+        maxOptions: 100,
+        onChange: handleCityChange
+      });
+    } else {
+      // Data refreshed — sync options without destroying the control
+      cityCtrl.clearOptions();
+      cityCtrl.clear(true);
+      [...new Set(db.map(r => r.city))].sort().forEach(c => cityCtrl.addOption({ value: c, text: c }));
+      cityCtrl.refreshOptions(false);
+    }
+
+    if (!storeCtrl) {
+      storeCtrl = new TomSelect('#storeSelect', {
+        create: false,
+        sortField: { field: 'text', direction: 'asc' },
+        maxOptions: 100,
+        onChange: updateTable
+      });
+      storeCtrl.disable();
+    }
   }
 
+  // ── Data loading ─────────────────────────────────────────────────────────────
   async function loadData() {
     try {
-      await WM.fetchWithCache(`${API_URL}?action=pendency`, 'wm:pendency', (payload, fromCache) => {
-        db = payload.records || [];
-        showMetadata(payload.metadata || {});
-        renderInsightsForPendency(db);
-        initSelectors();
-        if (!fromCache) hideLoader();
-      });
+      await WM.fetchWithCache(
+        `${API_URL}?action=pendency`,
+        'wm:pendency',
+        (payload, fromCache) => {
+          db = payload.records || [];
+          initSelectors();
+          if (!fromCache) hideLoader();
+        }
+      );
       hideLoader();
     } catch (err) {
       hideLoader();
       showToast(err.message || 'Failed to load data from server.', true);
-      document.getElementById('dataStatus').textContent = 'Unable to load data.';
     }
   }
 
-  function hideLoader() {
-    const loader = document.getElementById('loading-overlay');
-    if (loader.style.display === 'none') return;
-    loader.classList.add('slide-up');
-    setTimeout(() => { loader.style.display = 'none'; }, 700);
-  }
-
-  function setMode(m) {
-    coachMode = m;
-    document.getElementById('btnNormal').classList.toggle('mode-active', !m);
-    document.getElementById('btnCoach').classList.toggle('mode-active', m);
-    document.getElementById('storeWrapper').style.display = m ? 'none' : 'block';
+  // ── Mode toggle ──────────────────────────────────────────────────────────────
+  function setMode(isCoach) {
+    coachMode = isCoach;
+    document.getElementById('btnNormal').classList.toggle('mode-active', !isCoach);
+    document.getElementById('btnCoach').classList.toggle('mode-active', isCoach);
+    document.getElementById('storeWrapper').style.display = isCoach ? 'none' : 'block';
     document.getElementById('resultArea').style.display = 'none';
-    if (cityCtrl) cityCtrl.clear();
-    if (storeCtrl) storeCtrl.clear();
+    if (cityCtrl) cityCtrl.clear(true);
+    if (storeCtrl) { storeCtrl.clear(true); storeCtrl.clearOptions(); storeCtrl.disable(); }
   }
 
+  // ── City change ──────────────────────────────────────────────────────────────
   function handleCityChange(c) {
     document.getElementById('resultArea').style.display = 'none';
     if (!c) return;
     if (coachMode) { updateTable(); return; }
-    storeCtrl.clearOptions(); storeCtrl.clear();
-    [...new Set(db.filter(i => i.city === c).map(i => i.darkStore))].sort().forEach(s => storeCtrl.addOption({ value: s, text: s }));
+
+    // Swap store options without destroying TomSelect
+    storeCtrl.clear(true);
+    storeCtrl.clearOptions();
+    [...new Set(db.filter(r => r.city === c).map(r => r.darkStore))].sort()
+      .forEach(s => storeCtrl.addOption({ value: s, text: s }));
     storeCtrl.enable();
   }
 
+  // ── Table update ─────────────────────────────────────────────────────────────
   function updateTable() {
-    const c = cityCtrl.getValue(), s = storeCtrl.getValue();
+    const c = cityCtrl.getValue();
+    const s = storeCtrl.getValue();
     if (!c || (!coachMode && !s)) return;
-    filtered = coachMode ? db.filter(i => i.city === c) : db.filter(i => i.city === c && i.darkStore === s);
+
+    filtered = coachMode
+      ? db.filter(r => r.city === c)
+      : db.filter(r => r.city === c && r.darkStore === s);
+
     if (coachMode) {
-      const sum = {};
-      filtered.forEach(i => { sum[i.fleetCoach] = (sum[i.fleetCoach] || 0) + 1; });
-      displayArray = Object.entries(sum).sort().map(([name, cnt]) => ({ name, cnt }));
+      // Aggregate client-side — avoids a round-trip
+      const sum = new Map();
+      filtered.forEach(r => {
+        const key = r.fleetCoach || 'FC Name Missing';
+        sum.set(key, (sum.get(key) || 0) + 1);
+      });
+      displayArray = [...sum.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, cnt]) => ({ name, cnt }));
     } else {
       displayArray = filtered;
     }
-    document.getElementById('countBadge').innerText = filtered.length;
-    document.getElementById('dlSheet').disabled = document.getElementById('dlPdf').disabled = filtered.length === 0;
+
+    document.getElementById('countBadge').textContent = filtered.length;
+    const empty = filtered.length === 0;
+    document.getElementById('dlSheet').disabled = empty;
+    document.getElementById('dlPdf').disabled = empty;
     currentPage = 1;
     renderPage();
   }
 
+  // ── Render ───────────────────────────────────────────────────────────────────
   function renderPage() {
-    totalPages = Math.ceil(displayArray.length / rowsPerPage) || 1;
-    const start = (currentPage - 1) * rowsPerPage;
-    const chunk = displayArray.slice(start, start + rowsPerPage);
+    const totalPages = Math.ceil(displayArray.length / ROWS_PER_PAGE) || 1;
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    const chunk = displayArray.slice(start, start + ROWS_PER_PAGE);
     const head = document.getElementById('tableHead');
     const body = document.getElementById('tableBody');
 
     if (filtered.length === 0) {
       head.innerHTML = '';
-      body.innerHTML = `<tr><td colspan="2" style="padding:40px"><h4 style="font-weight:800;color:#10b981;margin:0">🎉 All Clear!</h4><p style="margin-top:5px;font-weight:700;color:#64748b">No pending items for this selection.</p></td></tr>`;
+      body.innerHTML = '<tr><td colspan="2" style="padding:40px">' +
+        '<h4 style="font-weight:800;color:#10b981;margin:0">🎉 All Clear!</h4>' +
+        '<p style="margin-top:5px;font-weight:700;color:#64748b">No pending items for this selection.</p>' +
+        '</td></tr>';
       document.getElementById('resultArea').style.display = 'flex';
       document.getElementById('paginationControls').style.display = 'none';
       return;
     }
 
+    // Build rows with a DocumentFragment for one DOM insertion
+    const frag = document.createDocumentFragment();
     if (coachMode) {
       head.innerHTML = '<tr><th>Fleet Coach</th><th>Total Pendency</th></tr>';
-      body.innerHTML = chunk.map(i => {
-        const name = i.name === 'FC Name Missing' ? '<span class="fc-missing-pill">FC Name Missing</span>' : WM.escapeHtml(i.name);
-        return `<tr><td>${name}</td><td><span class="badge-count">${i.cnt}</span></td></tr>`;
-      }).join('');
+      chunk.forEach(r => {
+        const tr = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        if (r.name === 'FC Name Missing') {
+          nameCell.innerHTML = '<span class="fc-missing-pill">FC Name Missing</span>';
+        } else {
+          nameCell.textContent = r.name;
+        }
+        const cntCell = document.createElement('td');
+        cntCell.innerHTML = `<span class="badge-count">${r.cnt}</span>`;
+        tr.append(nameCell, cntCell);
+        frag.appendChild(tr);
+      });
     } else {
       head.innerHTML = '<tr><th style="width:50%">WM Name</th><th style="width:50%">Shipsy ID</th></tr>';
-      body.innerHTML = chunk.map(i => `<tr><td>${WM.escapeHtml(i.name)}</td><td style="text-transform:none">${WM.escapeHtml(i.shipsyId)}</td></tr>`).join('');
+      chunk.forEach(r => {
+        const tr = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        nameCell.textContent = r.name;
+        const idCell = document.createElement('td');
+        idCell.style.textTransform = 'none';
+        idCell.textContent = r.shipsyId;
+        tr.append(nameCell, idCell);
+        frag.appendChild(tr);
+      });
     }
+    body.textContent = ''; // clear cheaply
+    body.appendChild(frag);
 
     document.getElementById('resultArea').style.display = 'flex';
-    if (displayArray.length > rowsPerPage) {
-      document.getElementById('paginationControls').style.display = 'flex';
-      document.getElementById('pageIndicator').innerText = `Page ${currentPage} of ${totalPages}`;
+
+    const pgCtrl = document.getElementById('paginationControls');
+    if (displayArray.length > ROWS_PER_PAGE) {
+      pgCtrl.style.display = 'flex';
+      document.getElementById('pageIndicator').textContent = `Page ${currentPage} of ${totalPages}`;
       document.getElementById('btnPrev').disabled = currentPage === 1;
       document.getElementById('btnNext').disabled = currentPage === totalPages;
     } else {
-      document.getElementById('paginationControls').style.display = 'none';
+      pgCtrl.style.display = 'none';
     }
   }
 
   function changePage(dir) {
+    const totalPages = Math.ceil(displayArray.length / ROWS_PER_PAGE) || 1;
     currentPage = Math.max(1, Math.min(totalPages, currentPage + dir));
     renderPage();
     document.querySelector('.table-responsive').scrollTop = 0;
   }
 
+  // ── Export ───────────────────────────────────────────────────────────────────
   function doExport(type) {
     if (!filtered.length) return;
     const city = cityCtrl.getValue();
     const name = coachMode ? `${city} Coach Summary` : storeCtrl.getValue();
     const btnSheet = document.getElementById('dlSheet');
     const btnPdf = document.getElementById('dlPdf');
-    btnSheet.disabled = true; btnPdf.disabled = true;
+    btnSheet.disabled = true;
+    btnPdf.disabled = true;
 
     if (type === 'pdf') {
-      const originalText = btnPdf.innerText;
-      btnPdf.innerText = 'Generating PDF...';
+      const orig = btnPdf.textContent;
+      btnPdf.textContent = 'Generating PDF…';
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.setFont('times', 'bold').setFontSize(14).text(`${name} Report`, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+      const pw = doc.internal.pageSize.getWidth();
+      doc.setFont('times', 'bold').setFontSize(14).text(`${name} Report`, pw / 2, 15, { align: 'center' });
       doc.autoTable({
-        head: coachMode ? [['FLEET COACH', 'DARK STORE', 'WM NAME', 'SHIPSY ID']] : [['NAME', 'SHIPSY ID']],
-        body: coachMode ? filtered.map(i => [i.fleetCoach, i.darkStore, i.name, i.shipsyId]) : filtered.map(i => [i.name, i.shipsyId]),
-        startY: 25, theme: 'grid', styles: { halign: 'center', fontSize: 8, font: 'times', lineColor: [0, 0, 0] }, headStyles: { fillColor: [253, 253, 150], textColor: [0, 0, 0] }
+        head: coachMode
+          ? [['FLEET COACH', 'DARK STORE', 'WM NAME', 'SHIPSY ID']]
+          : [['NAME', 'SHIPSY ID']],
+        body: coachMode
+          ? filtered.map(r => [r.fleetCoach, r.darkStore, r.name, r.shipsyId])
+          : filtered.map(r => [r.name, r.shipsyId]),
+        startY: 25,
+        theme: 'grid',
+        styles: { halign: 'center', fontSize: 8, font: 'times', lineColor: [0, 0, 0] },
+        headStyles: { fillColor: [253, 253, 150], textColor: [0, 0, 0] }
       });
       doc.save(`${name}.pdf`);
-      btnPdf.innerText = originalText; btnSheet.disabled = false; btnPdf.disabled = false;
+      btnPdf.textContent = orig;
+      btnSheet.disabled = false;
+      btnPdf.disabled = false;
     } else {
-      const originalText = btnSheet.innerText;
+      const orig = btnSheet.textContent;
       const exportWindow = window.open('', '_blank');
-      btnSheet.innerText = 'Creating Sheet...';
+      btnSheet.textContent = 'Creating Sheet…';
       fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' }, // keeps this a "simple request" — no CORS preflight
-        body: JSON.stringify({ action: 'createExport', criteria: { mode: coachMode ? 'coach' : 'store', city, darkStore: storeCtrl.getValue() } })
+        // text/plain keeps this a simple request — no CORS preflight
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action: 'createExport',
+          criteria: {
+            mode: coachMode ? 'coach' : 'store',
+            city,
+            darkStore: storeCtrl.getValue()
+          }
+        })
       })
         .then(r => r.json())
         .then(res => {
-          btnSheet.innerText = originalText; btnSheet.disabled = false; btnPdf.disabled = false;
-          if (res.error) { showToast(res.error, true); if (exportWindow) exportWindow.close(); return; }
-          if (exportWindow) exportWindow.location.href = res.url; else window.open(res.url, '_blank');
+          btnSheet.textContent = orig;
+          btnSheet.disabled = false;
+          btnPdf.disabled = false;
+          if (res.error) {
+            showToast(res.error, true);
+            if (exportWindow) exportWindow.close();
+            return;
+          }
+          if (exportWindow) exportWindow.location.href = res.url;
+          else window.open(res.url, '_blank');
         })
         .catch(() => {
           if (exportWindow) exportWindow.close();
-          btnSheet.innerText = originalText; btnSheet.disabled = false; btnPdf.disabled = false;
+          btnSheet.textContent = orig;
+          btnSheet.disabled = false;
+          btnPdf.disabled = false;
           showToast('Server connection failed.', true);
         });
     }
   }
 
+  // Boot once all deferred scripts have executed
   document.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
