@@ -356,27 +356,6 @@ function showMascot() {
 })();
 
 /* ────────────────────────────────────────────────────────────────────────────
-   🔒  DOUBLE-CLICK SECRET (download PDF is already visible; this is reserved
-   for future admin expansions — kept for your requirement spec).
-   Double-clicking anywhere on the page triggers a brief glow on the glass panel.
-──────────────────────────────────────────────────────────────────────────── */
-(function initSecretDblClick() {
-  let clicks = 0, timer;
-  document.addEventListener('click', () => {
-    clicks++;
-    clearTimeout(timer);
-    timer = setTimeout(() => { clicks = 0; }, 400);
-    if (clicks >= 2) {
-      clicks = 0;
-      const panel = document.getElementById('mainPanel');
-      panel.style.boxShadow = '0 0 0 3px #4f46e5, 0 20px 60px rgba(79,70,229,.25)';
-      setTimeout(() => { panel.style.boxShadow = ''; }, 1000);
-      showToast('✨ Admin mode unlocked', false);
-    }
-  });
-})();
-
-/* ────────────────────────────────────────────────────────────────────────────
    🤖  AI REASONING ENGINE
    Pure client-side heuristic analysis of the pendency data.
    No external API call — uses statistical patterns, concentration analysis,
